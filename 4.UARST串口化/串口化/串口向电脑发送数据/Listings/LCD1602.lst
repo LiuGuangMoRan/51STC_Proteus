@@ -1,0 +1,191 @@
+C51 COMPILER V9.54   LCD1602                                                               10/21/2023 13:06:14 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE LCD1602
+OBJECT MODULE PLACED IN .\Objects\LCD1602.obj
+COMPILER INVOKED BY: D:\c51\C51\BIN\C51.EXE LCD1602.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LCD16
+                    -02.lst) TABS(2) OBJECT(.\Objects\LCD1602.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #inclue <Delay.h>
+*** WARNING C315 IN LINE 2 OF LCD1602.c: unknown #directive 'inclue'
+   3          sbit LCD_RS = P2^6;       //  RS: 数据/指令端，1为数据，0为指令
+   4          sbit LCD_RW = P2^5;       //  RW: 读写/写端，1为读，0为写
+   5          sbit LCD_E  = P2^7;       //  E：  使1数据有效，下降沿执行命令
+   6          
+   7          #define LCD_DataPort P0   ////数据输入端，传16进制数，0000 0000 
+   8          
+   9          /** 
+  10            * @brief  1.延迟函数
+  11            * @param  xms为所需的延迟时间(单位：ms)
+  12            * @retval Delay(xms)作用于等待或消除时间对程序的影响,根据单片机晶振频率计算�
+             -�来
+  13            */
+  14          
+  15            
+  16          /** 
+  17            * @brief  3.LCD1602液晶显示屏模块化
+  18            * @include 3.1 写入功能指令，LCD1602器件有指令集           3.2写入数据
+  19            *          3.3对LCD进行初始化                               3.4选定屏幕位置
+  20            *          3.6展示字符串                                   3.7展示无符号的数字 
+  21            *          3.8.展示符号的数字
+  22            */
+  23          
+  24          /** 
+  25            * @brief   3.1写入功能指令，LCD1602器件有指令集
+  26            * @param   Command为写入指定内容
+  27            * @retval  LCD_WriteCommand(Command)写入功能指令，对LCD1602进行初始化  
+  28            */
+  29          
+  30          void LCD_WriteCommand(unsigned char Command)
+  31          { 
+  32   1        //根据写入数据/指令(时序结构)
+  33   1        
+  34   1        LCD_RS = 0;               // 0为指令
+  35   1        LCD_RW = 0;               // 0为写入
+  36   1        LCD_DataPort = Command;         // 写入指定内容
+  37   1        LCD_E  = 1;               // 下降沿执行命令
+  38   1        Delay(1);               
+*** WARNING C206 IN LINE 38 OF LCD1602.c: 'Delay': missing function-prototype
+*** ERROR C267 IN LINE 38 OF LCD1602.c: 'Delay': requires ANSI-style prototype
+  39   1        LCD_E  = 0;
+  40   1        Delay(1);
+  41   1      }
+  42          
+  43          
+  44          /** 
+  45            * @brief   //3.2写入数据
+  46            * @param   Data为写入指定内容
+  47            * @retval  LCD_WriteData(Data)写入数据内容
+  48            */
+  49          
+  50          void LCD_WriteData(unsigned char Data)
+C51 COMPILER V9.54   LCD1602                                                               10/21/2023 13:06:14 PAGE 2   
+
+  51          {
+  52   1        LCD_RS = 1;               // 1为指令
+  53   1        LCD_RW = 0;               // 0为写入
+  54   1        LCD_DataPort = Data;          // 写入指定内容
+  55   1        LCD_E  = 1;               // 下降沿执行命?
+  56   1        Delay(1);               // 执行指令的时间为ms级
+  57   1        LCD_E  = 0;               // 而E的执行时间为ns级 ,所以要延迟以防E执行过快
+  58   1        Delay(1);               // 前面的Delay1ms都不能少，少了就通信不了
+  59   1      }
+  60          
+  61          /** 
+  62            * @brief   //3.3对LCD进行初始化
+  63            * @param   无
+  64            * @retval  LCD_Init(void)对LCD选定所需功能一些指令
+  65            */
+  66          
+  67          void LCD_Init(void)
+  68          {
+  69   1        //选定所需功能
+  70   1        LCD_WriteCommand(0x38);
+  71   1        LCD_WriteCommand(0x0C);
+  72   1        LCD_WriteCommand(0x06);
+  73   1        LCD_WriteCommand(0x01);
+  74   1      }
+  75          
+  76          /** 
+  77            * @brief   //3.4选定屏幕位置
+  78            * @param   Line是选定LCD的行  Column是选定LCD列的
+  79            * @retval  LCD_Pleace(Line,Column)选定LCD屏幕位置
+  80            */
+  81          
+  82          void LCD_Pleace(unsigned char Line,unsigned char Column)
+  83          {
+  84   1        if(Line == 1)
+  85   1        {
+  86   2          LCD_WriteCommand(0x80|(Column-1));      //设置数据位置(光标位置)
+  87   2        }
+  88   1        else
+  89   1        {
+  90   2          LCD_WriteCommand(0x80|(Column-1)+0x40);
+  91   2        }
+  92   1      }
+  93          
+  94          /** 
+  95            * @brief   //3.5展示单字节
+  96            */
+  97          
+  98          void LCD_ShowChar(unsigned char Line,unsigned char Column,unsigned char Char)
+  99          {
+ 100   1        LCD_Pleace(Line,Column);
+ 101   1        LCD_WriteData(Char);
+ 102   1      }
+ 103          
+ 104          /** 
+ 105            * @brief   //3.6展示字符串
+ 106            */
+ 107           
+ 108          void LCD_ShowString(unsigned char Line,unsigned char Column,unsigned char*String)
+ 109          {
+ 110   1        unsigned char i;
+ 111   1        LCD_Pleace(Line,Column);
+ 112   1        for(i=0;String[i]!='\0';i++)
+C51 COMPILER V9.54   LCD1602                                                               10/21/2023 13:06:14 PAGE 3   
+
+ 113   1        {
+ 114   2          LCD_WriteData(String[i]);
+ 115   2        }
+ 116   1      }
+ 117          
+ 118          /** 
+ 119            * @brief   //3.6Pow平方运算(功能函数)
+ 120            */
+ 121          
+ 122          int LCD_Pow(int X,int Y)
+ 123          {
+ 124   1        unsigned char i;
+ 125   1        int Result = 1;
+ 126   1        for(i=0;i<Y;i++)
+ 127   1        {
+ 128   2          Result*=X;
+ 129   2        }
+ 130   1        return Result;
+ 131   1      }
+ 132          
+ 133          /** 
+ 134            * @brief  3.7展示无符号的数字
+ 135            */
+ 136          
+ 137          void LCD_ShowNum(unsigned char Line,unsigned Column,unsigned int Number,unsigned char Length)
+ 138          {
+ 139   1        unsigned char i;
+ 140   1        LCD_Pleace(Line,Column);
+ 141   1        for(i=Length;i>0;i--)
+ 142   1        {
+ 143   2          LCD_WriteData(Number/LCD_Pow(10,i-1)%10+'0'); //得到整数的每个数字
+ 144   2        }
+ 145   1      }
+ 146          
+ 147          /** 
+ 148            * @brief  3.8.展示符号的数
+ 149            */
+ 150          
+ 151          void LCD_ShowSignedNum(unsigned char Line,unsigned char Column,int Number,unsigned char Length)
+ 152          {
+ 153   1        unsigned char i;
+ 154   1        int Number1;
+ 155   1        LCD_Pleace(Line,Column);
+ 156   1        if(Number>=0)
+ 157   1        {
+ 158   2          LCD_WriteData('+');
+ 159   2          Number1=Number;
+ 160   2        }
+ 161   1        else
+ 162   1        {
+ 163   2          LCD_WriteData('-');
+ 164   2          Number1=-Number;
+ 165   2        }
+ 166   1        for(i=Length;i>0;i--)
+ 167   1        {
+ 168   2          //这里计算的十进制数，要展示数字要对应表的数值，所以要加'0'
+ 169   2          LCD_WriteData(Number1/LCD_Pow(10,i-1)%10+'0');  //得到整数的每个数字
+ 170   2        }
+ 171   1      }
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  1 ERROR(S)

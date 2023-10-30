@@ -1,0 +1,153 @@
+C51 COMPILER V9.54   MAIN                                                                  10/27/2023 15:44:19 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\c51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst
+                    -) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <regx52.h>
+   2          #include "Timer0.h"
+   3          #include "Better_Small_key.h"
+   4          #include "Better_Nixie.h"
+   5          #include "I2C.H"
+   6          
+   7          unsigned char KeyNum;               //选秒表的功能如：1.开始 2.暂停 3.重置
+   8          unsigned char Min,Sec,MiniSec;      //分别储存：分，秒，毫秒
+   9          unsigned char RunFlag;              //控制开始
+  10          
+  11          
+  12          //休眠毫秒数
+  13          void Delay(unsigned int xms)    //@12.000MHz
+  14          {
+  15   1        unsigned char i, j;
+  16   1        while(xms)
+  17   1        {
+  18   2          i = 2;
+  19   2          j = 239;
+  20   2          do
+  21   2          {
+  22   3            while (--j);
+  23   3          }while (--i);
+  24   2          xms--;
+  25   2        } 
+  26   1      }
+  27          
+  28          void main()
+  29          {   Timer0_Init();
+  30   1          while(1)
+  31   1          {
+  32   2            KeyNum=Key();
+  33   2            if(KeyNum==1)     //K1按键按下
+  34   2            {
+  35   3              RunFlag=!RunFlag; //启动标志位翻转
+  36   3            }
+  37   2            if(KeyNum==2)     //K2按键按下
+  38   2            {
+  39   3              Min=0;        //分秒清0
+  40   3              Sec=0;
+  41   3              MiniSec=0;
+  42   3            }
+  43   2            if(KeyNum==3)     //K3按键按下
+  44   2            {
+  45   3              AT24C02_WriteByte(0,Min); //将分秒写入AT24C02
+  46   3              Delay(5);
+  47   3              AT24C02_WriteByte(1,Sec);
+  48   3              Delay(5);
+  49   3              AT24C02_WriteByte(2,MiniSec);
+  50   3              Delay(5);
+  51   3            }
+  52   2            if(KeyNum==4)     //K4按键按下
+  53   2            {
+  54   3              Min=AT24C02_ReadByte(0);  //读出AT24C02数据
+C51 COMPILER V9.54   MAIN                                                                  10/27/2023 15:44:19 PAGE 2   
+
+  55   3              Sec=AT24C02_ReadByte(1);
+  56   3              MiniSec=AT24C02_ReadByte(2);
+  57   3            }
+  58   2              //设置数码管的数值：分，秒，毫秒
+  59   2              Nixie_SetBuf(1,Min/10);
+  60   2              Nixie_SetBuf(2,Min%10);
+  61   2              Nixie_SetBuf(3,11);
+  62   2              Nixie_SetBuf(4,Sec/10);
+  63   2              Nixie_SetBuf(5,Sec%10);
+  64   2              Nixie_SetBuf(6,11);
+  65   2              Nixie_SetBuf(7,MiniSec/10);
+  66   2              Nixie_SetBuf(8,MiniSec%10);
+  67   2          }
+  68   1      
+  69   1      }
+  70          
+  71          
+  72          //根据分秒毫秒进行进制
+  73          //  1000毫秒 = 1秒
+  74          void Sec_Loop(void)
+  75          {
+  76   1        if(RunFlag)
+  77   1        {
+  78   2          MiniSec++;
+  79   2          if(MiniSec>=100)    //1000ms 进制 1s
+  80   2          {
+  81   3            MiniSec=0;
+  82   3            Sec++;
+  83   3              if(Sec>=60)     //60s    进制 1min
+  84   3              {
+  85   4                Sec=0;
+  86   4                Min++;
+  87   4                  if(Min>=60)
+  88   4                  {
+  89   5                    Min=0;
+  90   5                  }
+  91   4              }
+  92   3          }
+  93   2          }
+  94   1      }
+  95          
+  96          /**
+  97           * 在main函数中，设置中断系统函数，可以多程序一起中断
+  98           * 思想就是：一个中断函数，可以定时执行多个中断程序
+  99          */
+ 100          void Timer0_Routine() interrupt 1
+ 101          {
+ 102   1          static unsigned int T0Count1,T0Count2,T0Count3;
+ 103   1          TL0  = 0x18;
+ 104   1          TH0  = 0xFC;
+ 105   1          T0Count1++;
+ 106   1          if (T0Count1>=20)       //定时20ms执行Key_Loop(),消除对Delay()影响
+ 107   1          {
+ 108   2             T0Count1 = 0;
+ 109   2             Key_Loop();
+ 110   2          } 
+ 111   1          T0Count2++;             
+ 112   1          if (T0Count2>=2)        //定时2ms执行Nixie_Loop(),消除对位选，断选的影响，更好执行
+             -8个数码管工作
+ 113   1          {                       //需要注意的，不得大于2ms，否则就有虚影
+ 114   2             T0Count2 = 0;
+ 115   2             Nixie_Loop();
+C51 COMPILER V9.54   MAIN                                                                  10/27/2023 15:44:19 PAGE 3   
+
+ 116   2          } 
+ 117   1          T0Count3++;
+ 118   1        if(T0Count3>=10)        //驱动秒表函数：固定10ms调用Sec_Loop(),实现秒表的进制
+ 119   1        {
+ 120   2          T0Count3=0;
+ 121   2          Sec_Loop(); //10ms调用一次数秒表驱动函数
+ 122   2        }
+ 123   1             
+ 124   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    422    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     11    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

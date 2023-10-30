@@ -1,0 +1,91 @@
+C51 COMPILER V9.54   KEYBOARD                                                              03/10/2023 14:35:16 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE KEYBOARD
+OBJECT MODULE PLACED IN .\Objects\Keyboard.obj
+COMPILER INVOKED BY: D:\Keil5\Keil5 C51\C51\BIN\C51.EXE Keyboard.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\L
+                    -istings\Keyboard.lst) TABS(2) OBJECT(.\Objects\Keyboard.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          
+   3          
+   4          /**
+   5           * 使用定时器固定扫描该函数：实现去除Delay函数带来的坏影响
+   6           * 
+   7           * 1.Keey_Loop()作用：固定获取2种状态：Key_keyNumber的位数/0 -----位数为(低电平/按下
+             -) ，0为(空闲和松开按键)
+   8           * 2.定时器的用途，每隔20ms调用Kee_Loop()，去除20ms的抖动
+   9           * 3.去抖动原理：抖动只有20ms,当获取到抖动的20ms中的1/0时，为1时没关系。为0时
+             -，表示按下了，但是后也至少有20ms的低电平
+  10           * 也就是说，即使触发抖动的值，但也有至少20ms的保持状态
+  11           * 4.按键为向上沿有效，即松开就有效
+  12           * 5，SmallKey()为辅助，作用就是获取端口的按键按下的低电平
+  13           * 6，Key_Loop()实时监控向下沿的状态
+  14           * 7. key()判断按下以及松手，并且传值
+  15          */
+  16          
+  17          unsigned char Key_KeyNumber;
+  18          
+  19          unsigned char SmallKey()
+  20          {
+  21   1        unsigned char KeyNumber = 0;
+  22   1        if(P3_1 == 0){KeyNumber = 1;}
+  23   1        if(P3_0 == 0){KeyNumber = 2;}
+  24   1        if(P3_2 == 0){KeyNumber = 3;}
+  25   1        if(P3_3 == 0){KeyNumber = 4;}
+  26   1        
+  27   1        
+  28   1        return KeyNumber;
+  29   1      }
+  30          
+  31          void Key_Loop(void)
+  32          {
+  33   1        static unsigned char NowState, LastState;
+  34   1        LastState  = NowState;
+  35   1        NowState = SmallKey();
+  36   1        if(LastState == 1  && NowState == 0)
+  37   1        {
+  38   2          Key_KeyNumber = 1;    
+  39   2        }
+  40   1        if(LastState == 2  && NowState == 0)
+  41   1        {
+  42   2          Key_KeyNumber = 2;    
+  43   2        }
+  44   1        if(LastState == 3  && NowState == 0)
+  45   1        {
+  46   2          Key_KeyNumber = 3;    
+  47   2        }
+  48   1        if(LastState == 4  && NowState == 0)
+  49   1        {
+  50   2          Key_KeyNumber = 4;    
+  51   2        }
+  52   1      
+C51 COMPILER V9.54   KEYBOARD                                                              03/10/2023 14:35:16 PAGE 2   
+
+  53   1      }
+  54          
+  55          unsigned char Key(void)
+  56          {
+  57   1        unsigned char Temp = 0 ;
+  58   1        Temp = Key_KeyNumber;
+  59   1        Key_KeyNumber = 0;
+  60   1        return Temp;
+  61   1      }
+  62          
+  63          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     85    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      3    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

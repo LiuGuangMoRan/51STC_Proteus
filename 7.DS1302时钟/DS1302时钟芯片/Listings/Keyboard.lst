@@ -1,0 +1,59 @@
+C51 COMPILER V9.54   KEYBOARD                                                              10/23/2023 14:43:31 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE KEYBOARD
+OBJECT MODULE PLACED IN .\Objects\Keyboard.obj
+COMPILER INVOKED BY: D:\c51\C51\BIN\C51.EXE Keyboard.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Keyb
+                    -oard.lst) TABS(2) OBJECT(.\Objects\Keyboard.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include <delay.h>
+   3          /** 4x4点阵键盘模块化
+   4            * @brief  矩阵键盘读取按键键码
+   5            * @param  无
+   6            * @retval KeyNumber 按下按键的键码值
+   7                如果按键按下不放，程序会停留在此函数，松手的一瞬间，返回按键键码，没�
+             -��按键按下时，返回0
+   8            @explain P1_0 ~ P1_3端是输入低电平，P1_7 ~ P1_4端是接收低电平，通过按下按键作为�
+             -�件
+   9                 P1 = 0xFF 使P1_0 ~ P1_7全为高电平，Delay函数消除按键前后影响
+  10            */
+  11          
+  12          
+  13          /** 4键键盘模块化
+  14            * @brief  矩阵键盘读取按键键码
+  15            * @param  无
+  16            * @retval KeyNumber 按下按键的键码值
+  17                如果按键按下不放，程序会停留在此函数，松手的一瞬间，返回按键键码，没�
+             -��按键按下时，返回0
+  18            @explain 输入低电平为接地端，P3_0 ~ P3_3端是接收低电平，通过按下按键作为条件�
+             -��Delay函数消除按键前后影响
+  19            */
+  20          
+  21          unsigned char SmallKey()
+  22          {
+  23   1        unsigned char KeyNumber = 0;
+  24   1        if(P1_1 == 0){Delay(20);while(P1_1==0);Delay(20);KeyNumber = 1;}
+  25   1        if(P1_0 == 0){Delay(20);while(P1_0==0);Delay(20);KeyNumber = 2;}
+  26   1        if(P1_2 == 0){Delay(20);while(P1_2==0);Delay(20);KeyNumber = 3;}
+  27   1        if(P1_3 == 0){Delay(20);while(P1_3==0);Delay(20);KeyNumber = 4;}
+  28   1        
+  29   1        
+  30   1        return KeyNumber;
+  31   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     97    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

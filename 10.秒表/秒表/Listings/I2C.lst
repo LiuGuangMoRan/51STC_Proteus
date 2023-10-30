@@ -1,0 +1,178 @@
+C51 COMPILER V9.54   I2C                                                                   10/27/2023 15:44:19 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE I2C
+OBJECT MODULE PLACED IN .\Objects\I2C.obj
+COMPILER INVOKED BY: D:\c51\C51\BIN\C51.EXE I2C.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\I2C.lst) 
+                    -TABS(2) OBJECT(.\Objects\I2C.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          
+   3          //储存器件的地址
+   4          #define AT24C02_ADDRESS 0XA0 
+   5          
+   6          sbit I2C_SCL = P2^1;
+   7          sbit I2C_SDA = P2^0;
+   8          
+   9          //I2C数据通信
+  10          
+  11          /**·
+  12            * @brief  I2C开始(数据传输开始)
+  13            * @param  无
+  14            * @retval 通信准备开始
+  15            */
+  16          void I2C_Start(void)
+  17          { 
+  18   1        I2C_SCL = 1;    //  先让时钟信号置1，SCL某些情况不是1
+  19   1        I2C_SDA = 1;    //  同上
+  20   1        I2C_SDA = 0;    //  当SCL,SDAc从高电平变低电平
+  21   1        I2C_SCL = 0;    //  代表数据传输开始
+  22   1      }
+  23          
+  24          /**
+  25            * @brief  I2C结束(数据传输结束)
+  26            * @param  无
+  27            * @retval 通信结束
+  28            */
+  29          void I2C_Stop(void)
+  30          {
+  31   1        I2C_SDA = 0;    //  此时SDA在表达ACK时，可能为0/1，所以要先置0；
+  32   1        I2C_SCL = 1;    //  最后一位的应答信时，最后SCL要置0的 
+  33   1        I2C_SDA = 1;    //  只需要把SCL,SDA从低到高即可
+  34   1      }
+  35          
+  36          //CPU发送数据到AT24C02,调用I2C_SendByte()函数把数据发送到AT24C02，其中根据SCL时钟信
+             -号统一步调
+  37          //AT24C02怎么接收存储，无需关心
+  38          
+  39          //而把AT24C02发送数据到CPU，调用的是I2C_ReceiveByte(),它怎么发送的无需关心，其cpu�
+             -��收是统一步调
+  40          
+  41          /**
+  42            * @brief  I2C数据发送
+  43            * @param  无
+  44            * @retval 数据帧为1个字节
+  45            */
+  46          void I2C_SendByte(unsigned char Byte)
+  47          {
+  48   1        unsigned char i;
+  49   1        //一个数据帧
+  50   1        for(i=0;i<8;i++)
+  51   1        {
+  52   2          I2C_SDA = Byte&(0x80>>i);   //获得传来的Byte的数据
+C51 COMPILER V9.54   I2C                                                                   10/27/2023 15:44:19 PAGE 2   
+
+  53   2          I2C_SCL = 1;  
+  54   2          I2C_SCL = 0;
+  55   2        }
+  56   1      }
+  57          
+  58          /**
+  59            * @brief  I2C数据接收
+  60            * @param  无
+  61            * @retval 数据帧为1个字节
+  62            */
+  63          unsigned char I2C_ReceiveByte(void)
+  64          {
+  65   1        unsigned char i,Byte = 0x00;
+  66   1        I2C_SDA = 1;  //释放数据总线
+  67   1        for(i=0;i<8;i++)
+  68   1        {
+  69   2          I2C_SCL = 1;
+  70   2          if(I2C_SDA)
+  71   2          {
+  72   3            Byte |= (0x80>>i);  //接收一个数据帧
+  73   3          }
+  74   2          I2C_SCL = 0;
+  75   2        }
+  76   1        return Byte;
+  77   1      }
+  78          
+  79          /**
+  80            * @brief  I2C数据发送应答0/1
+  81            * @param  无
+  82            * @retval 数据一个比特位
+  83            */
+  84          void I2C_SendAck(unsigned char AckBit)
+  85          {
+  86   1        I2C_SDA = AckBit;
+  87   1        I2C_SCL = 1;
+  88   1        I2C_SCL = 0;
+  89   1      }
+  90          
+  91          /**
+  92            * @brief  I2C数据接收应答0/1
+  93            * @param  无
+  94            * @retval 数据一个比特位
+  95            */
+  96          unsigned char I2C_ReceiveAck(void)
+  97          {
+  98   1        unsigned char AckBit;
+  99   1        I2C_SDA = 1;
+ 100   1        I2C_SCL = 1;
+ 101   1        AckBit =I2C_SDA;
+ 102   1        I2C_SCL=0;
+ 103   1        return AckBit;
+ 104   1      }
+ 105          
+ 106          //每个数据帧发送，要加前缀的，如：哪个存储器件，哪个存储位置
+ 107          //而接收端需要的是需求数据，就要打开，怎么打开的无需关心
+ 108          
+ 109          /**
+ 110            * @brief  用I2C写入存储器件
+ 111            * @param  无
+ 112            * @retval 发送数据不一个数据帧，包含发送存储器件，数据存储位置的地址等
+ 113            */
+ 114          void AT24C02_WriteByte(unsigned char WordAddress,Date)
+C51 COMPILER V9.54   I2C                                                                   10/27/2023 15:44:19 PAGE 3   
+
+ 115          {
+ 116   1        I2C_Start();  //数据传输开始
+ 117   1        I2C_SendByte(AT24C02_ADDRESS); //发送到的储存器件
+ 118   1        I2C_ReceiveAck();
+ 119   1        I2C_SendByte(WordAddress); //发送数据存储位置
+ 120   1        I2C_ReceiveAck();
+ 121   1        I2C_SendByte(Date);//发送需求数据
+ 122   1        I2C_ReceiveAck();
+ 123   1        I2C_Stop();//数据传输停止
+ 124   1      }
+ 125          
+ 126          /**
+ 127            * @brief  用I2C读取存储器件的内存
+ 128            * @param  无
+ 129            * @retval 发送数据不一个数据帧，包含发送存储器件，数据存储位置的地址等
+ 130            */
+ 131          //读取存储器件内容(定死了存储器件只有一个)
+ 132          unsigned char AT24C02_ReadByte(unsigned char WordAddress)
+ 133          {
+ 134   1        unsigned char Date;
+ 135   1        I2C_Start(); 
+ 136   1        I2C_SendByte(AT24C02_ADDRESS);  //选定哪个存储器件读取
+ 137   1        I2C_ReceiveAck();
+ 138   1        I2C_SendByte(WordAddress);   //选定哪个数据位读取
+ 139   1        I2C_ReceiveAck();
+ 140   1        I2C_Start();    //读取数据位的规定
+ 141   1        
+ 142   1        I2C_SendByte(AT24C02_ADDRESS |0x01); //说明是读取规定数据位的字节
+ 143   1        I2C_ReceiveAck();
+ 144   1        Date = I2C_ReceiveByte(); //获取到数据
+ 145   1        I2C_SendAck(1);
+ 146   1        I2C_Stop();
+ 147   1        return Date;
+ 148   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    185    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

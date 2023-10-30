@@ -1,0 +1,133 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        10/22/2023  14:35:18  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+D:\C51\C51\BIN\BL51.EXE .\Objects\main.obj TO .\Objects\8.2 PRINT (.\Listings\8.m51) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\main.obj (MAIN)
+  D:\C51\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  .\Objects\8.2 (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            IDATA   0008H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0017H     UNIT         ?PR?UARTINIT?MAIN
+            CODE    001AH     0014H     UNIT         ?PR?_DELAY?MAIN
+            CODE    002EH     000CH     UNIT         ?C_C51STARTUP
+            CODE    003AH     000AH     UNIT         ?PR?MAIN?MAIN
+            CODE    0044H     0008H     UNIT         ?PR?_UART_SENDBYTE?MAIN
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\8.2 (MAIN)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN
+
+?PR?MAIN?MAIN
+  +--> ?PR?UARTINIT?MAIN
+  +--> ?PR?_UART_SENDBYTE?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\8.2 (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  B:00B0H.5       PUBLIC        T1
+  C:003AH         PUBLIC        main
+  D:0099H         PUBLIC        SBUF
+  D:0087H         PUBLIC        PCON
+BL51 BANKED LINKER/LOCATER V6.22                                                      10/22/2023  14:35:18  PAGE 2
+
+
+  D:0098H         PUBLIC        SCON
+  C:0003H         PUBLIC        UartInit
+  D:0089H         PUBLIC        TMOD
+  C:0044H         PUBLIC        _UART_SendByte
+  B:00A8H.3       PUBLIC        ET1
+  D:008DH         PUBLIC        TH1
+  D:008BH         PUBLIC        TL1
+  B:0088H.6       PUBLIC        TR1
+  C:001AH         PUBLIC        _Delay
+  -------         PROC          _DELAY
+  D:0006H         SYMBOL        xms
+  -------         DO            
+  D:0005H         SYMBOL        i
+  D:0004H         SYMBOL        j
+  -------         ENDDO         
+  C:001AH         LINE#         4
+  C:001AH         LINE#         5
+  C:001AH         LINE#         7
+  C:001EH         LINE#         8
+  C:001EH         LINE#         9
+  C:0020H         LINE#         10
+  C:0022H         LINE#         12
+  C:0022H         LINE#         13
+  C:0024H         LINE#         14
+  C:0026H         LINE#         15
+  C:002BH         LINE#         16
+  C:002DH         LINE#         17
+  -------         ENDPROC       _DELAY
+  -------         PROC          UARTINIT
+  C:0003H         LINE#         21
+  C:0003H         LINE#         22
+  C:0003H         LINE#         23
+  C:0006H         LINE#         24
+  C:0009H         LINE#         25
+  C:000CH         LINE#         26
+  C:000FH         LINE#         27
+  C:0012H         LINE#         28
+  C:0015H         LINE#         29
+  C:0017H         LINE#         30
+  C:0019H         LINE#         31
+  -------         ENDPROC       UARTINIT
+  -------         PROC          _UART_SENDBYTE
+  D:0007H         SYMBOL        Byte
+  C:0044H         LINE#         35
+  C:0044H         LINE#         36
+  C:0044H         LINE#         37
+  C:0046H         LINE#         38
+  C:0049H         LINE#         39
+  C:004BH         LINE#         41
+  -------         ENDPROC       _UART_SENDBYTE
+  -------         PROC          MAIN
+  C:003AH         LINE#         43
+  C:003AH         LINE#         44
+  C:003AH         LINE#         45
+  C:003DH         LINE#         47
+  C:003DH         LINE#         48
+  C:003DH         LINE#         49
+BL51 BANKED LINKER/LOCATER V6.22                                                      10/22/2023  14:35:18  PAGE 3
+
+
+  C:0042H         LINE#         50
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY?MAIN
+
+Program Size: data=9.0 xdata=0 code=76
+LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)

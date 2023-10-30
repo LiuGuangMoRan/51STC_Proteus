@@ -1,0 +1,57 @@
+C51 COMPILER V9.54   MAIN                                                                  10/23/2023 14:43:31 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\c51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst
+                    -) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "DS1302.h"
+   2          #include "LCD1602.h"
+   3          #include "Timer0.h"
+   4          #include "Keyboard.h"
+   5          #include <REGX52.H>
+   6          
+   7          unsigned char KeyNum,Mode;
+   8          
+   9          void main()
+  10          {
+  11   1        LCD_Init();
+  12   1        DS1302_Init();
+  13   1        Timer0_Init();
+  14   1        LCD_ShowString(1,1,"  -  -  ");//?????????
+  15   1        LCD_ShowString(2,1,"  :  :  ");
+  16   1      
+  17   1        DS1302_SetTime();
+  18   1        while(1)
+  19   1        {
+  20   2          KeyNum = SmallKey();
+  21   2          if(KeyNum == 1)   //????,????
+  22   2          {
+  23   3            if(Mode == 0){Mode = 1;}
+  24   3            else if (Mode == 1){Mode = 0;}
+  25   3          }
+  26   2          switch(Mode)
+  27   2          {
+  28   3            case 0:TimeShow();break;
+  29   3            case 1:TimeSet(KeyNum);break;
+  30   3          }
+  31   2        }
+  32   1      }
+  33          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     85    ----
+   CONSTANT SIZE    =     18    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

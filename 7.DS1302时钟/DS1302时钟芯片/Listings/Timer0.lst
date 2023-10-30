@@ -1,0 +1,134 @@
+C51 COMPILER V9.54   TIMER0                                                                10/23/2023 14:43:31 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE TIMER0
+OBJECT MODULE PLACED IN .\Objects\Timer0.obj
+COMPILER INVOKED BY: D:\c51\C51\BIN\C51.EXE Timer0.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Timer0
+                    -.lst) TABS(2) OBJECT(.\Objects\Timer0.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          
+   3          /**
+   4            * @brief  定时器0初始化
+   5            * @param  无
+   6            * @retval Timer0_Init()启动定时器，设置工作模式，设置定时初值
+   7            */
+   8          
+   9          void Timer0_Init()
+  10          {
+  11   1        TMOD=0x01;  //不可寻址,控制定时器的模式为模式一,TMON为功能寄存器
+  12   1        
+  13   1        //下面为TCON控制计数器,跳变方式
+  14   1        
+  15   1        TF0=0;      //硬件置1或置0，清除TF0标志
+  16   1        TR0=1;      //软件置1或置0，定时器0开始计时
+  17   1        
+  18   1        //控制计算器为1ms进行跳变,就要改变TH0,TL0的值
+  19   1        //64535位十进制数,256为16的2次方,所以64535变成十六进制数,再变成8位
+  20   1        //二进制数
+  21   1        
+  22   1        //TH0=64535/256;//获取前8位的数值
+  23   1        //TL0=64535%256;//获取后8位的数值
+  24   1        
+  25   1          //直接采用16进制赋值
+  26   1          TH0 = 0xFC; 
+  27   1          TL0 = 0x18;
+  28   1      
+  29   1        //控制中断系统,执行中断程序
+  30   1        ET0=1;
+  31   1        EA=1;
+  32   1        PT0=0;
+  33   1        
+  34   1      }
+  35          
+  36          /**
+  37            * @brief  执行中断程序(放在main函数中)
+  38            * @param  无
+  39            * @retval Timer0_Routine() interrupt 1  当定时器计数完毕，跳过当前程序，执行中断程�
+             -��
+  40            */
+  41          
+  42          //主函数调用定时器模板
+  43          
+  44          /*
+  45          void Timer0_Routine() interrupt 1   //初始值为1ms
+  46          {
+  47              static unsigned int T0Count1;
+  48              TL0  = 0x18;
+  49              TH0  = 0xFC;
+  50              T0Count1++;
+  51              if (T0Count1>=)       //定时？多少ms执行中断系统
+  52              {
+  53                
+C51 COMPILER V9.54   TIMER0                                                                10/23/2023 14:43:31 PAGE 2   
+
+  54              }     
+  55          }
+  56          */
+  57           
+  58          
+  59          
+  60          /**
+  61            * @brief  初始化定时器(功能是不触发中断,不工作)，只需完成计数工作，完成需�
+             -��其他函数
+  62            * @param  无
+  63            * @retval 无
+  64            */
+  65          void Timer0_Init_NoWork()
+  66          {
+  67   1        TMOD&=0xF0;   
+  68   1        TMOD|=0x01;
+  69   1        TH0=0;
+  70   1        TL0=0;
+  71   1        TF0=0;      
+  72   1        TR0=0;      
+  73   1      }
+  74          
+  75          /**
+  76            * @brief  设置定时器的初值
+  77            * @param  value设置定时器初值，通过/%得到前8位和后8位
+  78            * @retval 无
+  79            */
+  80          void Timer0_SetCounter(unsigned int Value)
+  81          {
+  82   1        TH0 = Value/256;
+  83   1        TL0 = Value%256;
+  84   1      }
+  85          
+  86          /**
+  87            * @brief  得到定时器的计数点
+  88            * @param  无
+  89            * @retval 返回的是以us作为单位的计数点
+  90            */
+  91          unsigned int Timer0_GetCounter(void)
+  92          {
+  93   1        return (TH0<<8)|TL0;
+  94   1      }
+  95          
+  96          /**
+  97            * @brief  控制定时器工作状态
+  98            * @param  Flay控制定时器的开关
+  99            * @retval 无
+ 100            */
+ 101          void Timer0_Run(unsigned char Flag)
+ 102          {
+ 103   1        TR0 = Flag;
+ 104   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     62    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.54   TIMER0                                                                10/23/2023 14:43:31 PAGE 3   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

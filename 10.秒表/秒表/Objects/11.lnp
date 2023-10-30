@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\Timer0.obj",
+".\Objects\I2C.obj",
+".\Objects\Better_Nixie.obj",
+".\Objects\Better_Small_Key.obj" 
+TO ".\Objects\11" 
+PRINT(".\Listings\11.m51") RAMSIZE(256) 

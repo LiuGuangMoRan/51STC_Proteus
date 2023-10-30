@@ -1,0 +1,181 @@
+C51 COMPILER V9.54   LCD1602                                                               10/23/2023 14:43:31 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE LCD1602
+OBJECT MODULE PLACED IN .\Objects\LCD1602.obj
+COMPILER INVOKED BY: D:\c51\C51\BIN\C51.EXE LCD1602.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LCD16
+                    -02.lst) TABS(2) OBJECT(.\Objects\LCD1602.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include <delay.h>
+   3          
+   4          sbit LCD_RS = P3^0;       //  RS: 数据/指令端，1为数据，0为指令
+   5          sbit LCD_RW = P3^1;       //  RW: 读写/写端，1为读，0为写
+   6          sbit LCD_E  = P3^2;       //  E：  使1数据有效，下降沿执行命令
+   7          
+   8          #define LCD_DataPort P2   ////数据输入端，传16进制数，0000 0000 
+   9          
+  10          /** 
+  11            * @brief  1.延迟函数
+  12            * @param  xms为所需的延迟时间(单位：ms)
+  13            * @retval Delay(xms)作用于等待或消除时间对程序的影响,根据单片机晶振频率计算�
+             -�来
+  14            */
+  15          
+  16          
+  17          
+  18            
+  19          /** 
+  20            * @brief  3.LCD1602液晶显示屏模块化
+  21            * @include 3.1 写入功能指令，LCD1602器件有指令集           3.2写入数据
+  22            *          3.3对LCD进行初始化                               3.4选定屏幕位置
+  23            *          3.6展示字符串                                   3.7展示无符号的数字 
+  24            *          3.8.展示符号的数字
+  25            */
+  26          
+  27          /** 
+  28            * @brief   3.1写入功能指令，LCD1602器件有指令集
+  29            * @param   Command为写入指定内容
+  30            * @retval  LCD_WriteCommand(Command)写入功能指令，对LCD1602进行初始化  
+  31            */
+  32          
+  33          void LCD_WriteCommand(unsigned char Command)
+  34          { 
+  35   1        //根据写入数据/指令(时序结构)
+  36   1        
+  37   1        LCD_RS = 0;               // 0为指令
+  38   1        LCD_RW = 0;               // 0为写入
+  39   1        LCD_DataPort = Command;         // 写入指定内容
+  40   1        LCD_E  = 1;               // 下降沿执行命令
+  41   1        Delay(1);               
+  42   1        LCD_E  = 0;
+  43   1        Delay(1);
+  44   1      }
+  45          
+  46          
+  47          /** 
+  48            * @brief   //3.2写入数据
+  49            * @param   Data为写入指定内容
+  50            * @retval  LCD_WriteData(Data)写入数据内容
+  51            */
+  52          
+  53          void LCD_WriteData(unsigned char Data)
+C51 COMPILER V9.54   LCD1602                                                               10/23/2023 14:43:31 PAGE 2   
+
+  54          {
+  55   1        LCD_RS = 1;               // 1为指令
+  56   1        LCD_RW = 0;               // 0为写入
+  57   1        LCD_DataPort = Data;          // 写入指定内容
+  58   1        LCD_E  = 1;               // 下降沿执行命?
+  59   1        Delay(1);               // 执行指令的时间为ms级
+  60   1        LCD_E  = 0;               // 而E的执行时间为ns级 ,所以要延迟以防E执行过快
+  61   1        Delay(1);               // 前面的Delay1ms都不能少，少了就通信不了
+  62   1      }
+  63          
+  64          /** 
+  65            * @brief   //3.3对LCD进行初始化
+  66            * @param   无
+  67            * @retval  LCD_Init(void)对LCD选定所需功能一些指令
+  68            */
+  69          
+  70          void LCD_Init(void)
+  71          {
+  72   1        //选定所需功能
+  73   1        LCD_WriteCommand(0x38);
+  74   1        LCD_WriteCommand(0x0C);
+  75   1        LCD_WriteCommand(0x06);
+  76   1        LCD_WriteCommand(0x01);
+  77   1      }
+  78          
+  79          /** 
+  80            * @brief   //3.4选定屏幕位置
+  81            * @param   Line是选定LCD的行  Column是选定LCD列的
+  82            * @retval  LCD_Pleace(Line,Column)选定LCD屏幕位置
+  83            */
+  84          
+  85          void LCD_Pleace(unsigned char Line,unsigned char Column)
+  86          {
+  87   1        if(Line == 1)
+  88   1        {
+  89   2          LCD_WriteCommand(0x80|(Column-1));      //设置数据位置(光标位置)
+  90   2        }
+  91   1        else
+  92   1        {
+  93   2          LCD_WriteCommand(0x80|(Column-1)+0x40);
+  94   2        }
+  95   1      }
+  96          
+  97          /** 
+  98            * @brief   //3.5展示单字节
+  99            */
+ 100          
+ 101          void LCD_ShowChar(unsigned char Line,unsigned char Column,unsigned char Char)
+ 102          {
+ 103   1        LCD_Pleace(Line,Column);
+ 104   1        LCD_WriteData(Char);
+ 105   1      }
+ 106          
+ 107          /** 
+ 108            * @brief   //3.6展示字符串
+ 109            */
+ 110           
+ 111          void LCD_ShowString(unsigned char Line,unsigned char Column,unsigned char*String)
+ 112          {
+ 113   1        unsigned char i;
+ 114   1        LCD_Pleace(Line,Column);
+ 115   1        for(i=0;String[i]!='\0';i++)
+C51 COMPILER V9.54   LCD1602                                                               10/23/2023 14:43:31 PAGE 3   
+
+ 116   1        {
+ 117   2          LCD_WriteData(String[i]);
+ 118   2        }
+ 119   1      }
+ 120          
+ 121          /** 
+ 122            * @brief   //3.6Pow平方运算(功能函数)
+ 123            */
+ 124          
+ 125          int LCD_Pow(int X,int Y)
+ 126          {
+ 127   1        unsigned char i;
+ 128   1        int Result = 1;
+ 129   1        for(i=0;i<Y;i++)
+ 130   1        {
+ 131   2          Result*=X;
+ 132   2        }
+ 133   1        return Result;
+ 134   1      }
+ 135          
+ 136          /** 
+ 137            * @brief  3.7展示无符号的数字
+ 138            */
+ 139          
+ 140          void LCD_ShowNum(unsigned char Line,unsigned Column,unsigned int Number,unsigned char Length)
+ 141          {
+ 142   1        unsigned char i;
+ 143   1        LCD_Pleace(Line,Column);
+ 144   1        for(i=Length;i>0;i--)
+ 145   1        {
+ 146   2          LCD_WriteData(Number/LCD_Pow(10,i-1)%10+'0'); //得到整数的每个数字
+ 147   2        }
+ 148   1      }
+ 149          
+ 150          /** 
+ 151            * @brief  3.8.展示符号的数
+ 152            */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    239    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      17
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
